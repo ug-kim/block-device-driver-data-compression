@@ -16,3 +16,22 @@ Block device에 데이터를 저장할 때, 압축해서 저장하고, 파일을
 - 특정 txt 파일의 compression 된 파일을 복사했을 때, 그 복사본의 decompression이 정상적으로 동작하는지 평가
 - 특정 txt 파일의 compression 된 파일을 복사하고 원본 파일을 삭제했을 때, 복사본의 decompression이 정상적으로 동작하는지 평가
 - 특정 txt 파일의 일부분만 읽어오려고 할 때, 정상적으로 읽어오는지 평가 (압축 시 일정 크기 단위로 압축해서 저장할 예정)
+
+# 코드 실행 방법
+
+```
+sudo ./sbull_load
+make quiz1
+sudo ./quiz1
+make change_mode
+sudo ./change_mode
+sudo .quiz1
+make key
+sudo ./key
+sudo ./quiz1
+sudo ./sbull_unload
+```
+
+- 출력 결과 확인은 `dmesg`를 사용한다
+- 출력 결과 기록 삭제는 `sudo dmesg -c`를 사용한다
+
