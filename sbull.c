@@ -29,7 +29,7 @@ static int hardsect_size = 512;
 static int nsectors = 1024 * 1024;	/* How big the drive is */
 static int ndevices = 1;
 
-int encryptmode; // 0 is no encrypt, 1 is encrypt
+int compress_mode; // 0 is no compress, 1 is decompress (normal)
 int input_key = 5;
 int key; // 0 is true, 1 is false
 
@@ -96,9 +96,9 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 	if(write) memcpy(dev->data + offset, buffer, nbytes);
 //	else memcpy(buffer, dev->data + offset, nbytes);
 	else {
-		if (encryptmode == 0) {
+		if (compress_mode == 0) {
 			memcpy(buffer, dev->data + offset, nbytes);	
-		} else if (encryptmode == 1) {
+		} else if (compress_mode == 1) {
 			char* temp = encryptDecrypt(dev->data + offset, sizeof(dev->data + offset));
 			memcpy(buffer, temp, nbytes);
 		}
@@ -192,19 +192,23 @@ int sbull_ioctl (struct block_device *bdev, fmode_t mode,
 	switch(cmd) {
 		case 0:
 			printk("Change_mode\n");
-			printk("Encrypt_mode\n");
-			encryptmode = 1;
+			printk("Compression_mode\n");
+			compress_mode = 0;
 			break;
 		case 1:
-			ret = __get_user(key, (int __user *)arg);
-			printk("here is key %d\n", key);
-			if(key == input_key) {
-				printk("Right key\n");
-				encryptmode = 0;
-			}
-			else {
-				printk("Wrong key\n");
-			}
+			printk("Change_mode\n");
+			printk("Decopression_mode\n");
+			compress_mode = 1;
+
+// 			ret = __get_user(key, (int __user *)arg);
+// 			printk("here is key %d\n", key);
+// 			if(key == input_key) {
+// 				printk("Right key\n");
+// 				encryptmode = 0;
+// 			}
+// 			else {
+// 				printk("Wrong key\n");
+// 			}
 			break;
 		//default:
 		//	printk(KERN_INFO "ioctl has some error\n");
