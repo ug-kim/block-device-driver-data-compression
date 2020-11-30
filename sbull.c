@@ -87,7 +87,7 @@ char* encryptDecrypt(char* buffer, int nbytes){
 }
 
 static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
-		unsigned long nsect, char *buffer, int write, int compress_mode)
+		unsigned long nsect, char *buffer, int write)
 {
     /* TODO : Write your codes */
 	unsigned long offset = sector * KERNEL_SECTOR_SIZE;
@@ -105,17 +105,16 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			unsigned char *buf;
 			unsigned char *dst;
 
-			size_t comp_size;
 			int com_ret;
 			buf = kmalloc(LZO1X_MEM_COMPRESS, GFP_KERNEL);
-			const int dst_buf_size = LZ4_compressBound(strlen(src) + 1);
+			const int dst_buf_size = LZ4_compressBound(strlen(buffer) + 1);
 			dst = kmalloc(dst_buf_size, GFP_KERNEL);
 			memset(dst, 0, dst_buf_size);
-			com_ret = LZ4_compress_default(src, dst, strlen(src), dst_buf_size, buf);
+			com_ret = LZ4_compress_default(buffer, dst, strlen(buffer), dst_buf_size, buf);
 
 			memcpy(dev->data + offset, dst, strlen(dst));
-			free(buf);
-			free(dst);
+			kfree(buf);
+			kfree(dst);
 		}
 	}
 //	else memcpy(buffer, dev->data + offset, nbytes);
