@@ -21,6 +21,9 @@
 #include <linux/blkdev.h>
 #include <linux/buffer_head.h>	/* invalidate_bdev */
 #include <linux/bio.h>
+#include <linux/lz4.h>
+#include <linux/lzo.h>
+#include <linux/string.h>
 
 MODULE_LICENSE("Dual BSD/GPL");
 
@@ -30,6 +33,7 @@ static int nsectors = 1024 * 1024;	/* How big the drive is */
 static int ndevices = 1;
 
 int encryptmode; // 0 is no encrypt, 1 is encrypt
+int compress;
 int input_key = 5;
 int key; // 0 is true, 1 is false
 
@@ -83,7 +87,7 @@ char* encryptDecrypt(char* buffer, int nbytes){
 }
 
 static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
-		unsigned long nsect, char *buffer, int write)
+		unsigned long nsect, char *buffer, int write, int compress_mode)
 {
     /* TODO : Write your codes */
 	unsigned long offset = sector * KERNEL_SECTOR_SIZE;
@@ -93,7 +97,27 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 		return;
 	}
 	
-	if(write) memcpy(dev->data + offset, buffer, nbytes);
+	if(write) {
+		if(compress_mode == 0){
+			memcpy(dev->data + offset, buffer, nbytes);
+		}
+		else{
+			unsigned char *buf;
+			unsigned char *dst;
+
+			size_t comp_size;
+			int com_ret;
+			buf = kmalloc(LZO1X_MEM_COMPRESS, GFP_KERNEL);
+			const int dst_buf_size = LZ4_compressBound(strlen(src) + 1);
+			dst = kmalloc(dst_buf_size, GFP_KERNEL);
+			memset(dst, 0, dst_buf_size);
+			com_ret = LZ4_compress_default(src, dst, strlen(src), dst_buf_size, buf);
+
+			memcpy(dev->data + offset, dst, strlen(dst));
+			free(buf);
+			free(dst);
+		}
+	}
 //	else memcpy(buffer, dev->data + offset, nbytes);
 	else {
 		if (encryptmode == 0) {
