@@ -30,7 +30,7 @@ endif
 
 
 clean:
-	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions quiz1 key change_mode
+	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions quiz1 key change_mode change_decompress_mode
 
 depend .depend dep:
 	$(CC) $(EXTRA_CFLAGS) -M *.c > .depend
@@ -49,3 +49,5 @@ key :
 change_mode :
 	gcc change_mode.c -o change_mode
 
+change_decompress_mode :
+	gcc change_decompress_mode.c -o change_decompress_mode
