@@ -1,1 +1,1 @@
-cmd_/home/dgist/linux/project/block-device-driver-data-compression/sbull.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/dgist/linux/project/block-device-driver-data-compression/sbull.ko /home/dgist/linux/project/block-device-driver-data-compression/sbull.o /home/dgist/linux/project/block-device-driver-data-compression/sbull.mod.o ;  true
+cmd_/home/dgist/project/sbull.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/dgist/project/sbull.ko /home/dgist/project/sbull.o /home/dgist/project/sbull.mod.o ;  true

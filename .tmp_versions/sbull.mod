@@ -1,3 +1,3 @@
-/home/dgist/linux/project/block-device-driver-data-compression/sbull.ko
-/home/dgist/linux/project/block-device-driver-data-compression/sbull.o
+/home/dgist/project/sbull.ko
+/home/dgist/project/sbull.o
 

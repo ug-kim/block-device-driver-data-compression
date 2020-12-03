@@ -82,7 +82,6 @@ char* encryptDecrypt(char* buffer, int nbytes){
 	for(i = 0; i < nbytes; i++){
 		xor[i] = (char)(buffer[i] ^ input_key);
 	}
-
 	return xor;
 }
 
@@ -99,9 +98,11 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 	
 	if(write) {
 		if(compress_mode == 0){
+			printk(KERN_INFO "Decompress mode trun on !!!\n");
 			memcpy(dev->data + offset, buffer, nbytes);
 		}
 		else{
+			printk(KERN_INFO "Compress mode turn on !!!\n");
 			unsigned char *buf;
 			unsigned char *dst;
 
@@ -110,20 +111,33 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			const int dst_buf_size = LZ4_compressBound(strlen(buffer));
 			dst = kmalloc(dst_buf_size, GFP_KERNEL);
 			memset(dst, 0, dst_buf_size);
-			com_ret = LZ4_compress_default(buffer, dst, strlen(buffer), dst_buf_size, buf);
+			int src_len = strlen(buffer);
+			com_ret = LZ4_compress_default(buffer, dst, src_len, dst_buf_size, buf);
 
 			memcpy(dev->data + offset, dst, com_ret);
+			
+			printk("Source: %s, len: %d\n", buffer, strlen(buffer));
+			printk("Compressed: %s, len: %d\n", dst, com_ret);
+
+			// decompression
+			unsigned char *dec;
+			int dcom_ret;
+			dec = kmalloc(src_len, GFP_KERNEL);
+			dcom_ret = LZ4_decompress_safe(dst, dec, com_ret, src_len);
+			printk("Decompressed: %s, len: %d\n", dec, strlen(dec));
+
+		
 			kfree(buf);
 			kfree(dst);
-		}
+			kfree(dec);}
 	}
 //	else memcpy(buffer, dev->data + offset, nbytes);
 	else {
 		if (compress_mode == 0) {
 			memcpy(buffer, dev->data + offset, nbytes);	
 		} else if (compress_mode == 1) {
-			char* temp = encryptDecrypt(dev->data + offset, sizeof(dev->data + offset));
-			memcpy(buffer, temp, nbytes);
+			// char* temp = encryptDecrypt(dev->data + offset, sizeof(dev->data + offset));
+			memcpy(buffer, dev->data + offset, nbytes);
 		}
 	}
 }
@@ -216,12 +230,12 @@ int sbull_ioctl (struct block_device *bdev, fmode_t mode,
 		case 0:
 			printk("Change_mode\n");
 			printk("Compression_mode\n");
-			compress_mode = 0;
+			compress_mode = 1;
 			break;
 		case 1:
 			printk("Change_mode\n");
 			printk("Decopression_mode\n");
-			compress_mode = 1;
+			compress_mode = 0;
 
 // 			ret = __get_user(key, (int __user *)arg);
 // 			printk("here is key %d\n", key);

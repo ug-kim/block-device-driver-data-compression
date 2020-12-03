@@ -19,5 +19,3 @@ __used
 __attribute__((section(".modinfo"))) =
 "depends=lz4_compress";
 
-
-MODULE_INFO(srcversion, "0BA80E6B96730C76EF6C5C0");

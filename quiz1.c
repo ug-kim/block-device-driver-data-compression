@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <linux/string.h>
 
 int main() {
 	int fd;
@@ -14,7 +15,7 @@ int main() {
 		exit(1);
 	}
 	
-	if(write(fd, buf1, 5) < 0) {
+	if(write(fd, buf1, strlen(buf1)) < 0) {
 		perror("write error");
 		exit(1);
 	}
@@ -26,9 +27,9 @@ int main() {
 		exit(1);
 	}
     
-	buf2 = (char*)malloc(5);
+	buf2 = (char*)malloc(strlen(buf1));
 	
-	if(read(fd, buf2, 5) < 0) {
+	if(read(fd, buf2, strlen(buf1)) < 0) {
 		perror("read error");
 		exit(1);
 	}
