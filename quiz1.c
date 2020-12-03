@@ -6,7 +6,7 @@
 
 int main() {
 	int fd;
-	char *buf1 = "Hello";
+	char *buf1 = "Hello! Nice to meet you! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?";
 	char *buf2;
 
 	if((fd = open("/dev/sbulla",O_RDWR)) < 0) {
