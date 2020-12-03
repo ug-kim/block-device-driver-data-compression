@@ -106,13 +106,13 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			unsigned char *dst;
 
 			int com_ret;
-			buf = kmalloc(LZO1X_MEM_COMPRESS, GFP_KERNEL);
-			const int dst_buf_size = LZ4_compressBound(strlen(buffer) + 1);
+			buf = kmalloc(LZ4_MEM_COMPRESS, GFP_KERNEL);
+			const int dst_buf_size = LZ4_compressBound(strlen(buffer));
 			dst = kmalloc(dst_buf_size, GFP_KERNEL);
 			memset(dst, 0, dst_buf_size);
 			com_ret = LZ4_compress_default(buffer, dst, strlen(buffer), dst_buf_size, buf);
 
-			memcpy(dev->data + offset, dst, strlen(dst));
+			memcpy(dev->data + offset, dst, com_ret);
 			kfree(buf);
 			kfree(dst);
 		}
