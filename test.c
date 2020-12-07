@@ -10,7 +10,7 @@ int main() {
 	char *buf1 = "Hello! Nice to meet you! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?\0";
 	char *buf2;
 
-	if((fd = open("/dev/sbulla",O_RDWR)) < 0) {
+	if((fd = open("/media/sbull/test.txt",O_RDWR)) < 0) {
 	    perror("open error");
 		exit(1);
 	}
@@ -22,7 +22,7 @@ int main() {
     
     fsync(fd);
     close(fd);
-	if((fd = open("/dev/sbulla",O_RDWR)) < 0) {
+	if((fd = open("/media/sbull/test.txt",O_RDWR)) < 0) {
 	    perror("open error");
 		exit(1);
 	}
