@@ -1,0 +1,32 @@
+[17492.972169] read -------------------------
+[17492.972171] nbytes at decompress: 4096
+[17492.972173] sector: 0, nsect: 8
+[17492.972173] offset: 0, nbytes: 4096
+[17492.972184] write -------------------------
+[17492.972184] Compress mode turn on !!!
+[17492.972189] Source: Hello! Nice to meet you! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?w\xffffff84\xfffffff9\xffffffff\xffffffff\xffffffc0Cw\xffffff84\xfffffff9\xffffffff\xffffffff, len: 144
+[17492.972190] Compressed: \xfffffffeHello! Nice to meet you, len: 126
+[17492.972191] source len at compress: 144
+[17492.972191] com_ret at compress: 126
+[17492.972192] ================================
+[17492.972193] sector: 0, nsect: 8
+[17492.972194] offset: 0, nbytes: 4096
+[17492.972294] read -------------------------
+[17492.972295] nbytes at decompress: 4096
+[17492.972296] source len at decompress: 144
+[17492.972296] com_ret at decompress: 126
+[17492.972297] dst at decompress: \xfffffffeHello! Nice to meet you
+[17492.972299] sector: 0, nsect: 8
+[17492.972299] offset: 0, nbytes: 4096
+[17492.972300] read -------------------------
+[17492.972301] nbytes at decompress: 4096
+[17492.972302] sector: 8, nsect: 8
+[17492.972302] offset: 4096, nbytes: 4096
+[17492.972303] read -------------------------
+[17492.972303] nbytes at decompress: 4096
+[17492.972304] sector: 16, nsect: 8
+[17492.972305] offset: 8192, nbytes: 4096
+[17492.972306] read -------------------------
+[17492.972306] nbytes at decompress: 4096
+[17492.972307] sector: 24, nsect: 8
+[17492.972308] offset: 12288, nbytes: 4096

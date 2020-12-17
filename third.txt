@@ -1,0 +1,35 @@
+[17531.900166] read -------------------------
+[17531.900168] nbytes at decompress: 4096
+[17531.900168] source len at decompress: 144
+[17531.900169] com_ret at decompress: 126
+[17531.900169] dst at decompress: \xfffffffeHello! Nice to meet you
+[17531.900171] sector: 0, nsect: 8
+[17531.900171] offset: 0, nbytes: 4096
+[17531.900179] write -------------------------
+[17531.900179] Compress mode turn on !!!
+[17531.900183] Source: Hello! Nice to meet you! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?w\xffffff84\xfffffff9\xffffffff\xffffffff\xffffffc0Cw\xffffff84\xfffffff9\xffffffff\xffffffff, len: 144
+[17531.900183] Compressed: \xfffffffeHello! Nice to meet you, len: 126
+[17531.900184] source len at compress: 144
+[17531.900184] com_ret at compress: 126
+[17531.900184] ================================
+[17531.900185] sector: 0, nsect: 8
+[17531.900186] offset: 0, nbytes: 4096
+[17531.900268] read -------------------------
+[17531.900269] nbytes at decompress: 4096
+[17531.900270] source len at decompress: 144
+[17531.900270] com_ret at decompress: 126
+[17531.900270] dst at decompress: \xfffffffeHello! Nice to meet you
+[17531.900271] sector: 0, nsect: 8
+[17531.900272] offset: 0, nbytes: 4096
+[17531.900272] read -------------------------
+[17531.900272] nbytes at decompress: 4096
+[17531.900273] sector: 8, nsect: 8
+[17531.900274] offset: 4096, nbytes: 4096
+[17531.900274] read -------------------------
+[17531.900275] nbytes at decompress: 4096
+[17531.900275] sector: 16, nsect: 8
+[17531.900276] offset: 8192, nbytes: 4096
+[17531.900276] read -------------------------
+[17531.900276] nbytes at decompress: 4096
+[17531.900277] sector: 24, nsect: 8
+[17531.900278] offset: 12288, nbytes: 4096

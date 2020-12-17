@@ -107,14 +107,14 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 
 	if(write) {
 		printk("write -------------------------\n");
-		
+		printk("source: %s\n", buffer);
 		src_len = strlen(buffer);
 		
 		if (src_len == 0) {
 			memcpy(dev->data + offset, buffer, nbytes);
 		} else {
 			// compression
-			printk(KERN_INFO "Compress mode turn on !!!\n");
+			printk(KERN_INFO "[compress] Compress mode turn on !!!\n");
 			
 			unsigned char *buf;
 			unsigned char *dst;
@@ -133,12 +133,12 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			table[sector][0] = com_ret;
 			table[sector][1] = src_len;
 
-			printk("Source: %s, len: %d\n", buffer, strlen(buffer));
-			printk("Compressed: %s, len: %d\n", dst, com_ret);
+			printk("[compress] source: %s, len: %d\n", buffer, strlen(buffer));
+			printk("[compress] encode: %s, len: %d\n", dst, com_ret);
 
-			printk("source len at compress: %d\n", src_len);
-			printk("com_ret at compress: %d\n", com_ret);
-			printk("================================\n");
+			// printk("source len at compress: %d\n", src_len);
+			// printk("com_ret at compress: %d\n", com_ret);
+			// printk("================================\n");
 			kfree(buf);
 			kfree(dst);
 		}	
@@ -147,8 +147,9 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 	else {
 		
 		printk("read -------------------------\n");
-
-		printk("nbytes at decompress: %d\n", nbytes);	
+		printk("dst: %s\n", buffer);
+		printk("dst2: %s\n", buffer);
+		// printk("nbytes at decompress: %d\n", nbytes);	
 		com_ret = table[sector][0];
 		src_len = table[sector][1];
 		
@@ -160,9 +161,9 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			
 			dst = kmalloc(com_ret, GFP_KERNEL);
 			memcpy(dst, dev->data + offset, com_ret);
-			printk("source len at decompress: %d\n", src_len);
-			printk("com_ret at decompress: %d\n", com_ret);
-			printk("dst at decompress: %s\n", dst);
+			// printk("source len at decompress: %d\n", src_len);
+			// printk("com_ret at decompress: %d\n", com_ret);
+			printk("[decompress] dst: %s, len: %d\n", dst, com_ret);
 				
 			unsigned char *dec;
 			int dcom_ret;
@@ -172,6 +173,7 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 				memcpy(buffer, dev->data + offset, nbytes);
 				pr_err("LZ4_decompress_safe error, ret = %d\n", dcom_ret);
 			} else {
+				printk("[decompress] dec: %s, len: %d\n", dec, src_len);
 				memcpy(buffer, dec, nbytes);
 			}
 
@@ -180,9 +182,9 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			kfree(dst);
 			kfree(dec);
 		}
-
-
+		printk("dst3: %s\n", buffer);
 	}
+	
 	printk("sector: %ld, nsect: %ld\n", sector, nsect);
 	printk("offset: %ld, nbytes: %ld\n", offset, nbytes);
 }
