@@ -104,87 +104,87 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 		return;
 	}
 	
-
+	printk("Before read and write!!!\n");
 	if(write) {
+		if(compress_mode == 0){
+			printk("Write and no compress_mode!\n");
+			memcpy(dev->data + offset, buffer, nbytes);	}
+		else{
 		printk("write -------------------------\n");
-		
-		src_len = strlen(buffer);
-		
-		if (src_len == 0) {
-			memcpy(dev->data + offset, buffer, nbytes);
-		} else {
-			// compression
-			printk(KERN_INFO "Compress mode turn on !!!\n");
-			
-			unsigned char *buf;
-			unsigned char *dst;
-			
-			buf = kmalloc(LZ4_MEM_COMPRESS, GFP_KERNEL);
-			dst_buf_size = LZ4_compressBound(strlen(buffer));
-			dst = kmalloc(dst_buf_size, GFP_KERNEL);
-			memset(dst, 0, dst_buf_size);
-			com_ret = LZ4_compress_default(buffer, dst, src_len, dst_buf_size, buf);
-			if (!com_ret) {
-				pr_err("LZ4 compress_default error: compression failed!\n");
-			}
-
-			memcpy(dev->data + offset, dst, nbytes);
-			
-			table[sector][0] = com_ret;
-			table[sector][1] = src_len;
-
-			printk("Source: %s, len: %d\n", buffer, strlen(buffer));
-			printk("Compressed: %s, len: %d\n", dst, com_ret);
-
-			printk("source len at compress: %d\n", src_len);
-			printk("com_ret at compress: %d\n", com_ret);
-			printk("================================\n");
-			kfree(buf);
-			kfree(dst);
-		}	
-	}
-//	else memcpy(buffer, dev->data + offset, nbytes);
-	else {
-		
-		printk("read -------------------------\n");
-
-		printk("nbytes at decompress: %d\n", nbytes);	
-		com_ret = table[sector][0];
-		src_len = table[sector][1];
-		
-		if (src_len == 0) {
-			memcpy(buffer, dev->data + offset, nbytes);
-		} else {
-			// decompression
-			unsigned char* dst;
-			
-			dst = kmalloc(com_ret, GFP_KERNEL);
-			memcpy(dst, dev->data + offset, com_ret);
-			printk("source len at decompress: %d\n", src_len);
-			printk("com_ret at decompress: %d\n", com_ret);
-			printk("dst at decompress: %s\n", dst);
+		src_len = strlen(buffer);	
+			if (src_len == 0) {
+				memcpy(dev->data + offset, buffer, nbytes);} 
+			else { // compression
+				printk(KERN_INFO "Compress mode turn on !!!\n");
 				
-			unsigned char *dec;
-			int dcom_ret;
-			dec = kmalloc(src_len, GFP_KERNEL);
-			dcom_ret = LZ4_decompress_safe(dst, dec, com_ret, src_len);
-			if (dcom_ret < 0) {
-				memcpy(buffer, dev->data + offset, nbytes);
-				pr_err("LZ4_decompress_safe error, ret = %d\n", dcom_ret);
-			} else {
-				memcpy(buffer, dec, nbytes);
-			}
+				unsigned char *buf;
+				unsigned char *dst;
+				
+				buf = kmalloc(LZ4_MEM_COMPRESS, GFP_KERNEL);
+				dst_buf_size = LZ4_compressBound(strlen(buffer));
+				dst = kmalloc(dst_buf_size, GFP_KERNEL);
+				memset(dst, 0, dst_buf_size);
+				com_ret = LZ4_compress_default(buffer, dst, src_len, dst_buf_size, buf);
+				if (!com_ret) {
+					pr_err("LZ4 compress_default error: compression failed!\n");
+				}
 
-			// printk("Decompressed: %s, len: %d\n", dec, strlen(dec));
-			// memcpy(buffer, dec, nbytes);
-			kfree(dst);
-			kfree(dec);
+				memcpy(dev->data + offset, dst, nbytes);
+				
+				table[sector][0] = com_ret;
+				table[sector][1] = src_len;
+				
+				printk("Sector #%d - com_ret, src_len at compress : %d, %d\n", sector, com_ret, src_len);
+				printk("Source: %s, len: %d\n", buffer, strlen(buffer));
+				printk("Compressed: %s, len: %d\n", dst, com_ret);
+
+				printk("================================\n");
+				kfree(buf);
+				kfree(dst);
+			}	
+		}
+	}
+	else {
+		printk("READDDDDDDDD!!!!!!!!!!!!!!!!!!!!!!1======================\n");
+		if(compress_mode == 0){
+			memcpy(buffer, dev->data + offset, nbytes);
+			printk("Sector #%d with com_ret, src_len at 0 mode : %d %d\n", sector, table[sector][0], table[sector][1]);
+		} else{
+			printk("read -------------------------\n");
+
+			printk("nbytes at decompress: %d\n", nbytes);	
+			com_ret = table[sector][0];
+			src_len = table[sector][1];
+			
+			if (src_len == 0) {
+				memcpy(buffer, dev->data + offset, nbytes);
+			} else {
+				// decompression
+				unsigned char* dst;
+				
+				dst = kmalloc(com_ret, GFP_KERNEL);
+				memcpy(dst, dev->data + offset, com_ret);
+				printk("Sector #%d - com_ret, src_len at decompress : %d, %d\n", sector, com_ret, src_len);
+				printk("dst at decompress: %s\n", dst);
+					
+				unsigned char *dec;
+				int dcom_ret;
+				dec = kmalloc(src_len, GFP_KERNEL);
+				dcom_ret = LZ4_decompress_safe(dst, dec, com_ret, src_len);
+				if (dcom_ret < 0) {
+					memcpy(buffer, dev->data + offset, nbytes);
+					pr_err("LZ4_decompress_safe error, ret = %d\n", dcom_ret);
+				} else {
+					memcpy(buffer, dec, nbytes);
+				}
+				kfree(dst);
+				kfree(dec);
+			}
 		}
 
-
 	}
-	printk("sector: %ld, nsect: %ld\n", sector, nsect);
-	printk("offset: %ld, nbytes: %ld\n", offset, nbytes);
+//	printk("sector: %ld, nsect: %ld\n", sector, nsect);
+//	printk("offset: %ld, nbytes: %ld\n", offset, nbytes);
 }
 
 

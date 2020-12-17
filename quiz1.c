@@ -28,17 +28,16 @@ int main() {
 	}
     
 	buf2 = (char*)malloc(strlen(buf1));
-	
+	printf("Before output : %s\n", buf2);
 	if(read(fd, buf2, strlen(buf1)) < 0) {
 		perror("read error");
 		exit(1);
 	}
-	
+
 //	printf("buf2 : %s\n", buf2);
 	printf("Input: %s\n", buf1);
 	printf("Output: %s\n", buf2);
 
 	close(fd);
-
 	return 0;
 }
