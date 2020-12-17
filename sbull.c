@@ -101,12 +101,8 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 	}
 
 	if(write) {
-//		if(compress_mode == 0){
-//			printk(KERN_INFO "Decompress mode trun on !!!\n");
-//			memcpy(dev->data + offset, buffer, nbytes);
-//		}
-//		else{
 		printk(KERN_INFO "Compress mode turn on !!!\n");
+		printk("write -------------------------\n");
 		unsigned char *buf;
 		unsigned char *dst;
 
@@ -127,21 +123,15 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 
 		printk("source len at compress: %d\n", src_len);
 		printk("com_ret at compress: %d\n", com_ret);
-		printk("--------------------------\n");
+		printk("================================\n");
 		kfree(buf);
 		kfree(dst);
-//		}
 	}
 //	else memcpy(buffer, dev->data + offset, nbytes);
 	else {
-//		if (compress_mode == 0) {
-//			memcpy(buffer, dev->data + offset, nbytes);	
-//		} else if (compress_mode == 1) {
-//			memcpy(buffer, dev->data + offset, nbytes);
-//		}
-		// memcpy(buffer, dev->data + offset, nbytes);
-		
-		
+
+		printk("read -------------------------\n");
+
 		printk("nbytes at decompress: %d\n", nbytes);	
 		unsigned char* dst;
 		dst = kmalloc(com_ret, GFP_KERNEL);
@@ -162,13 +152,15 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			memcpy(buffer, dec, nbytes);
 		}
 
-
-		printk("----------------------------\n");
 		// printk("Decompressed: %s, len: %d\n", dec, strlen(dec));
 		// memcpy(buffer, dec, nbytes);
 		kfree(dst);
 		kfree(dec);
 	}
+	printk("################################\n");
+	printk("sector: %ld, nsect: %ld\n", sector, nsect);
+	printk("offset: %ld, nbytes: %ld\n", offset, nbytes);
+	printk("#################################3\n");
 }
 
 
