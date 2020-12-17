@@ -55,6 +55,10 @@ int key; // 0 is true, 1 is false
  */
 #define INVALIDATE_DELAY	30*HZ
 
+int src_len = 0;
+int com_ret = 0;
+int dst_buf_size = 0;
+
 /*
  * The internal representation of our device.
  */
@@ -82,7 +86,6 @@ char* encryptDecrypt(char* buffer, int nbytes){
 	for(i = 0; i < nbytes; i++){
 		xor[i] = (char)(buffer[i] ^ input_key);
 	}
-
 	return xor;
 }
 
@@ -96,36 +99,68 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 		printk(KERN_NOTICE "Beyond-end write (%ld %ld)\n", offset, nbytes);
 		return;
 	}
-	
+
 	if(write) {
-		if(compress_mode == 0){
-			memcpy(dev->data + offset, buffer, nbytes);
-		}
-		else{
-			unsigned char *buf;
-			unsigned char *dst;
+		printk(KERN_INFO "Compress mode turn on !!!\n");
+		printk("write -------------------------\n");
+		unsigned char *buf;
+		unsigned char *dst;
 
-			int com_ret;
-			buf = kmalloc(LZ4_MEM_COMPRESS, GFP_KERNEL);
-			const int dst_buf_size = LZ4_compressBound(strlen(buffer));
-			dst = kmalloc(dst_buf_size, GFP_KERNEL);
-			memset(dst, 0, dst_buf_size);
-			com_ret = LZ4_compress_default(buffer, dst, strlen(buffer), dst_buf_size, buf);
-
-			memcpy(dev->data + offset, dst, com_ret);
-			kfree(buf);
-			kfree(dst);
+		buf = kmalloc(LZ4_MEM_COMPRESS, GFP_KERNEL);
+		dst_buf_size = LZ4_compressBound(strlen(buffer));
+		dst = kmalloc(dst_buf_size, GFP_KERNEL);
+		memset(dst, 0, dst_buf_size);
+		src_len = strlen(buffer);
+		com_ret = LZ4_compress_default(buffer, dst, src_len, dst_buf_size, buf);
+		if (!com_ret) {
+			pr_err("LZ4 compress_default error: compression failed!\n");
 		}
+
+		memcpy(dev->data + offset, dst, com_ret);
+		
+		printk("Source: %s, len: %d\n", buffer, strlen(buffer));
+		printk("Compressed: %s, len: %d\n", dst, com_ret);
+
+		printk("source len at compress: %d\n", src_len);
+		printk("com_ret at compress: %d\n", com_ret);
+		printk("================================\n");
+		kfree(buf);
+		kfree(dst);
 	}
 //	else memcpy(buffer, dev->data + offset, nbytes);
 	else {
-		if (compress_mode == 0) {
-			memcpy(buffer, dev->data + offset, nbytes);	
-		} else if (compress_mode == 1) {
-			char* temp = encryptDecrypt(dev->data + offset, sizeof(dev->data + offset));
-			memcpy(buffer, temp, nbytes);
+
+		printk("read -------------------------\n");
+
+		printk("nbytes at decompress: %d\n", nbytes);	
+		unsigned char* dst;
+		dst = kmalloc(com_ret, GFP_KERNEL);
+		memcpy(dst, dev->data + offset, com_ret);
+		printk("source len at decompress: %d\n", src_len);
+		printk("com_ret at decompress: %d\n", com_ret);
+		printk("dst at decompress: %s\n", dst);
+		
+		// decompression
+		unsigned char *dec;
+		int dcom_ret;
+		dec = kmalloc(src_len, GFP_KERNEL);
+		dcom_ret = LZ4_decompress_safe(dst, dec, com_ret, src_len);
+		if (dcom_ret < 0) {
+			memcpy(buffer, dev->data + offset, nbytes);
+		 	pr_err("LZ4_decompress_safe error, ret = %d\n", dcom_ret);
+		} else {
+			memcpy(buffer, dec, nbytes);
 		}
+
+		// printk("Decompressed: %s, len: %d\n", dec, strlen(dec));
+		// memcpy(buffer, dec, nbytes);
+		kfree(dst);
+		kfree(dec);
 	}
+	printk("################################\n");
+	printk("sector: %ld, nsect: %ld\n", sector, nsect);
+	printk("offset: %ld, nbytes: %ld\n", offset, nbytes);
+	printk("#################################3\n");
 }
 
 
@@ -216,12 +251,12 @@ int sbull_ioctl (struct block_device *bdev, fmode_t mode,
 		case 0:
 			printk("Change_mode\n");
 			printk("Compression_mode\n");
-			compress_mode = 0;
+			compress_mode = 1;
 			break;
 		case 1:
 			printk("Change_mode\n");
 			printk("Decopression_mode\n");
-			compress_mode = 1;
+			compress_mode = 0;
 
 // 			ret = __get_user(key, (int __user *)arg);
 // 			printk("here is key %d\n", key);
