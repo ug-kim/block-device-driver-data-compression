@@ -8,10 +8,10 @@
 
 int main() {
 	int fd;
-	char *buf1 = "Hello! Nice to meet you! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?\0";
+	char *buf1 = "Hello! Nice to meet you4! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?\0";
 	char *buf2;
 
-	if((fd = open("/media/sbull/dgist.txt",O_RDWR)) < 0) {
+	if((fd = open("/media/sbull/dgist4.txt",O_RDWR)) < 0) {
 	    perror("open error");
 		exit(1);
 	}

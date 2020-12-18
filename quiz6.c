@@ -8,10 +8,10 @@
 
 int main() {
 	int fd;
-	char *buf1 = "Hello! Nice to meet you! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?\0";
+	char *buf1 = "Hello! Nice to meet you6! Nice to meet you, too! What's your name? My name is kyeonghyeon. How are you? I'm fine thank you and you?\0";
 	char *buf2;
 
-	if((fd = open("/media/sbull/dgist.txt",O_RDWR)) < 0) {
+/*	if((fd = open("/media/sbull/dgist.txt",O_RDWR)) < 0) {
 	    perror("open error");
 		exit(1);
 	}
@@ -23,7 +23,8 @@ int main() {
     
     fsync(fd);
     close(fd);
-/*	if((fd = open("/media/sbull/dgist.txt", O_RDWR, O_DIRECT)) < 0) {
+*/
+	if((fd = open("/media/sbull/dgist.txt", O_RDWR)) < 0) {
 	    perror("open error");
 		exit(1);
 	}
@@ -34,10 +35,10 @@ int main() {
 		perror("read error");
 		exit(1);
 	}
-*/
+
 //	printf("buf2 : %s\n", buf2);
-	printf("Input: %s\n", buf1);
-//	printf("Output: %s\n", buf2);
+//	printf("Input: %s\n", buf1);
+	printf("Output: %s\n", buf2);
 
 	close(fd);
 	return 0;
