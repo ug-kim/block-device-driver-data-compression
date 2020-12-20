@@ -34,10 +34,6 @@ static int ndevices = 1;
 
 #define n_sects 1024 * 1024
 
-int compress_mode; // 0 is no compress, 1 is decompress (normal)
-int input_key = 5;
-int key; // 0 is true, 1 is false
-
 /*
  * Minor number and partition management.
  */
@@ -56,7 +52,10 @@ int key; // 0 is true, 1 is false
  */
 #define INVALIDATE_DELAY	30*HZ
 
-// index 0 : com_ret, 1 : src_len, 2 : is_compress
+/*
+ * Table for each sector
+ *  index 0 : com_ret, 1 : src_len, 2 : is_compress
+ */
 int table[n_sects][3] = {{0}};
 		
 /*
@@ -78,16 +77,6 @@ static struct sbull_dev *Devices = NULL;
 /*
  * Handle an I/O request.
  */
-char* encryptDecrypt(char* buffer, int nbytes){
-    /* TODO : Write your codes */
-	int i;
-	// char xor[nbytes];
-	char* xor = kmalloc(nbytes, GFP_KERNEL);
-	for(i = 0; i < nbytes; i++){
-		xor[i] = (char)(buffer[i] ^ input_key);
-	}
-	return xor;
-}
 
 static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 		unsigned long nsect, char *buffer, int write)
@@ -107,19 +96,16 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 	
 
 	if(write) {
-		// if(sector < 500) {
 		printk("write -------------------------\n");
-		printk("source: %s\n", buffer);
-		// }
 		src_len = strlen(buffer);
 		
 		if (src_len == 0) {
+			// not compression mode
+			// Because input size is 0
 			memcpy(dev->data + offset, buffer, nbytes);
 		} else {
-			// compression
-			// if (sector < 500) {
+			// compression mode
 			printk(KERN_INFO "[compress] Compress mode turn on !!!\n");
-			// }
 			unsigned char *buf;
 			unsigned char *dst;
 			
@@ -131,7 +117,9 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 			if (!com_ret) {
 				pr_err("LZ4 compress_default error: compression failed!\n");
 			}
-
+			
+			// if the input size is so small, compressed data size is larger than source data
+			// So, in that case, we do not compress data
 			if (com_ret > src_len) {
 				memcpy(dev->data + offset, buffer, nbytes);
 				table[sector][2] = 1;
@@ -140,74 +128,57 @@ static void sbull_transfer(struct sbull_dev *dev, unsigned long sector,
 				table[sector][0] = com_ret;
 				table[sector][1] = src_len;
 			}
-			// if(sector < 50000) {
 			printk("[compress] source: %s, len: %d\n", buffer, strlen(buffer));
 			printk("[compress] encode: %s, len: %d\n", dst, com_ret);
-			// }
-			// printk("source len at compress: %d\n", src_len);
-			// printk("com_ret at compress: %d\n", com_ret);
-			// printk("================================\n");
+			
 			kfree(buf);
 			kfree(dst);
 		}	
 	}
-//	else memcpy(buffer, dev->data + offset, nbytes);
 	else {
-		
-		// if (sector < 50000) {
 		printk("read -------------------------\n");
-		// }
-		// printk("nbytes at decompress: %d\n", nbytes);	
 		com_ret = table[sector][0];
 		src_len = table[sector][1];
 		
 		int is_compress = table[sector][2];
 		
-		// if (sector < 50000) {
 		printk("com_ret: %d, src_len: %d\n", com_ret, src_len);
-		// }
+		
+		// If src_len is 0, the input data size is 0 -> we did not compress data
+		// If is_compress is 1, we did not compress data
+		// Because the compressed data size is larger than source data size
 		if (src_len == 0 || is_compress == 1) {
 			memcpy(buffer, dev->data + offset, nbytes);
 		} else {
-			// decompression
+			// decompression mode
 			unsigned char* dst;
 			
 			dst = kmalloc(com_ret, GFP_KERNEL);
 			memcpy(dst, dev->data + offset, com_ret);
-			// printk("source len at decompress: %d\n", src_len);
-			// printk("com_ret at decompress: %d\n", com_ret);
 			
-			// if (sector < 50000) {
 			printk("[decompress] dst: %s, len: %d\n", dst, com_ret);
-			// }
+			
 			unsigned char *dec;
 			int dcom_ret;
 			dec = kmalloc(src_len, GFP_KERNEL);
 			dcom_ret = LZ4_decompress_safe(dst, dec, com_ret, src_len);
 			if (dcom_ret < 0) {
+				// If decompression error, we do not decompress
+				// It is just for to prevent stop program
 				memcpy(buffer, dev->data + offset, nbytes);
 				pr_err("LZ4_decompress_safe error, ret = %d\n", dcom_ret);
 			} else {
-				// if (sector < 50000) {
 				printk("[decompress] dec: %s, len: %d\n", dec, src_len);
-				// }
 				memcpy(buffer, dec, nbytes);
 			}
 
-			// printk("Decompressed: %s, len: %d\n", dec, strlen(dec));
-			// memcpy(buffer, dec, nbytes);
 			kfree(dst);
 			kfree(dec);
 		}
-		// if (sector < 50000) {
-		printk("dst3: %s\n", buffer);
-		// }
 	}
-
-	// if (sector < 50000) {
-		printk("sector: %ld, nsect: %ld\n", sector, nsect);
-		printk("offset: %ld, nbytes: %ld\n", offset, nbytes);
-	// }
+	// It is to show sector and offset value
+	printk("sector: %ld, nsect: %ld\n", sector, nsect);
+	printk("offset: %ld, nbytes: %ld\n", offset, nbytes);
 }
 
 
@@ -292,33 +263,7 @@ int sbull_ioctl (struct block_device *bdev, fmode_t mode,
                  unsigned int cmd, unsigned long arg)
 {
     /* TODO : Write your codes */
-    int key, ret = 0;
-	
-	switch(cmd) {
-		case 0:
-			printk("Change_mode\n");
-			printk("Compression_mode\n");
-			compress_mode = 1;
-			break;
-		case 1:
-			printk("Change_mode\n");
-			printk("Decopression_mode\n");
-			compress_mode = 0;
-
-// 			ret = __get_user(key, (int __user *)arg);
-// 			printk("here is key %d\n", key);
-// 			if(key == input_key) {
-// 				printk("Right key\n");
-// 				encryptmode = 0;
-// 			}
-// 			else {
-// 				printk("Wrong key\n");
-// 			}
-			break;
-		//default:
-		//	printk(KERN_INFO "ioctl has some error\n");
-		//	ret = -ENOTTY;
-	}
+	int ret = 0; 
 	return ret; /* unknown command */
 }
 

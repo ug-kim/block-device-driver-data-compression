@@ -30,7 +30,7 @@ endif
 
 
 clean:
-	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions quiz1 key change_mode change_decompress_mode
+	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions test1_1 test1_2 test2_1 test2_2 test3_1 test3_2
 
 depend .depend dep:
 	$(CC) $(EXTRA_CFLAGS) -M *.c > .depend
@@ -40,14 +40,21 @@ ifeq (.depend,$(wildcard .depend))
 include .depend
 endif
 
-quiz1:
-	gcc quiz1.c -o quiz1
+test1_1:
+	gcc test1_1.c -o test1_1
 
-key : 
-	gcc key.c -o key
+test1_2:
+	gcc test1_2.c -o test1_2
 
-change_mode :
-	gcc change_mode.c -o change_mode
+test2_1:
+	gcc test2_1.c -o test2_1
 
-change_decompress_mode :
-	gcc change_decompress_mode.c -o change_decompress_mode
+test2_2:
+	gcc test2_2.c -o test2_2
+
+test3_1:
+	gcc test3_1.c -o test3_1
+
+test3_2:
+	gcc test3_2.c -o test3_2
+
