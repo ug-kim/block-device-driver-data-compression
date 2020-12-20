@@ -1,37 +1,44 @@
-# 주제
+# Subject
 
-Block device driver data compression
+- Block Device Driver Data Compression
 
-# 구현 계획
+# Compression Algorithm
 
-Block device에 데이터를 저장할 때, 압축해서 저장하고, 파일을 다시 읽어올 때 압축을 풀어서 사용자에게 제공해줄 수 있는 block device driver를 구현할 예정입니다.
+- [lz4](https://github.com/lz4/lz4)
 
-압축 알고리즘 - 미정
+# How to run
 
-추가로 사용자가 일부 파일만을 읽으려 할 때, 전체 압축을 해제하지 않도록 파일을 일정 크기 단위로 압축해 저장할 계획입니다. 이렇게 하면 사용자가 파일의 일부만을 읽으려 할 때 전체 파일의 압축을 해제하지 않고, 사용자가 읽으려는 부분의 범위만 압축을 해제하여 보여줄 수 있어서 computationally efficient 합니다.
+- To load sbull
 
-# 성능 평가 계획 - 벤치마크
-
-- 서로 다른 txt 파일 10000개를 테스트해, compression과 decompression이 정상적으로 동작하는지 평가
-- 특정 txt 파일의 compression 된 파일을 복사했을 때, 그 복사본의 decompression이 정상적으로 동작하는지 평가
-- 특정 txt 파일의 compression 된 파일을 복사하고 원본 파일을 삭제했을 때, 복사본의 decompression이 정상적으로 동작하는지 평가
-- 특정 txt 파일의 일부분만 읽어오려고 할 때, 정상적으로 읽어오는지 평가 (압축 시 일정 크기 단위로 압축해서 저장할 예정)
-
-# 코드 실행 방법
-
-```
+```bash
+sudo modprobe lz4
+make
+make test1_1 test1_2 test2_1 test2_2 test3_1 test3_2
 sudo ./sbull_load
-make quiz1
-sudo ./quiz1
-make change_mode
-sudo ./change_mode
-sudo .quiz1
-make key
-sudo ./key
-sudo ./quiz1
-sudo ./sbull_unload
 ```
 
-- 출력 결과 확인은 `dmesg`를 사용한다
-- 출력 결과 기록 삭제는 `sudo dmesg -c`를 사용한다
+- Mount
+
+```bash
+sudo mkdir /media/sbull
+sudo mkfs -t ext4 /dev/sbulla
+sodu mount -t ext4 /dev/sbulla /media/sbull
+```
+
+- Change mode to sbull - for drop_caches
+
+```bash
+sudo -s
+```
+
+- Test - you can see test log using 'dmesg'
+
+```bash
+sudo ./test1_1
+sudo echo 3 > /proc/sys/vm/drop_caches
+shdo ./test1_2
+```
+
+- If you want to log, using `dmesg`
+- If you wannt to delete logs, `sudo dmesg -c`
 
